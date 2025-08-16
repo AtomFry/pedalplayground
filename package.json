@@ -4,7 +4,8 @@
 	"description": "A site to help you arrange pedals",
 	"main": "gulpfile.js",
 	"devDependencies": {
-		"gulp": "^4.0.2"
+		"gulp": "^4.0.2",
+		"sqlite3": "^5.1.6"
 	},
 	"scripts": {
 		"start": "npm-run-all --parallel watch serve",
@@ -13,7 +14,12 @@
 		"watch": "npm-run-all --parallel watch:*",
 		"serve": "browser-sync start --files app public --server ",
 		"build": "npm-run-all build:*",
-		"postbuild": "postcss public/stylesheets/*.css -u autoprefixer cssnano -r --no-map"
+		"postbuild": "postcss public/stylesheets/*.css -u autoprefixer cssnano -r --no-map",
+		"db:setup": "node database/scripts/setup.js",
+		"db:seed": "node database/scripts/seed.js",
+		"db:export": "node database/scripts/export-json.js",
+		"db:query": "node database/scripts/query.js",
+		"db:reset": "rm -f database/pedalplayground.db && npm run db:setup && npm run db:seed"
 	},
 	"repository": {
 		"type": "git",
