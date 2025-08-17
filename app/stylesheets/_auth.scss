@@ -1,0 +1,292 @@
+// Authentication UI Styles
+// Styles for login, registration, and user navigation components
+
+// Auth navigation styles
+.auth-link {
+	display: inline-block;
+	padding: 8px 12px;
+	color: #2F2F31;
+	text-decoration: none;
+	border-radius: 4px;
+	transition: background-color 0.2s ease;
+	
+	&:hover,
+	&:focus {
+		background-color: rgba(47, 47, 49, 0.1);
+		color: #2F2F31;
+		text-decoration: none;
+	}
+}
+
+// User dropdown menu
+.user-menu {
+	.dropdown-toggle {
+		.glyphicon-user {
+			margin-right: 5px;
+		}
+		
+		.caret {
+			margin-left: 5px;
+		}
+	}
+	
+	.dropdown-menu {
+		min-width: 180px;
+		
+		a {
+			.glyphicon {
+				margin-right: 8px;
+				width: 14px;
+			}
+		}
+		
+		.divider {
+			margin: 6px 0;
+		}
+	}
+}
+
+// Modal authentication styles
+.modal {
+	// Override Bootstrap modal styles for auth modals
+	&#loginModal,
+	&#registerModal,
+	&#resetModal {
+		.modal-dialog {
+			max-width: 400px;
+			margin: 60px auto;
+		}
+		
+		.modal-header {
+			border-bottom: 2px solid #8576f7;
+			
+			.modal-title {
+				color: #2F2F31;
+				font-weight: 600;
+			}
+		}
+		
+		.modal-body {
+			padding: 30px;
+			
+			.form-group {
+				margin-bottom: 20px;
+				
+				label {
+					font-weight: 500;
+					color: #2F2F31;
+					margin-bottom: 6px;
+				}
+				
+				.form-control {
+					border: 1px solid #ddd;
+					border-radius: 4px;
+					padding: 10px 12px;
+					font-size: 14px;
+					transition: border-color 0.2s ease, box-shadow 0.2s ease;
+					
+					&:focus {
+						border-color: #8576f7;
+						box-shadow: 0 0 0 3px rgba(133, 118, 247, 0.1);
+						outline: none;
+					}
+				}
+				
+				.form-text {
+					font-size: 12px;
+					color: #666;
+					margin-top: 4px;
+				}
+			}
+			
+			.alert {
+				font-size: 14px;
+				margin-bottom: 10px;
+				padding: 10px 12px;
+				border-radius: 4px;
+				
+				&.alert-danger {
+					background-color: #f8d7da;
+					border-color: #f5c6cb;
+					color: #721c24;
+				}
+				
+				&.alert-success {
+					background-color: #d4edda;
+					border-color: #c3e6cb;
+					color: #155724;
+				}
+			}
+		}
+		
+		.modal-footer {
+			border-top: 1px solid #e5e5e5;
+			padding: 20px 30px;
+			
+			.btn {
+				margin-left: 10px;
+				
+				&:first-child {
+					margin-left: 0;
+				}
+				
+				&.btn-primary {
+					background-color: #8576f7;
+					border-color: #8576f7;
+					padding: 8px 20px;
+					font-weight: 500;
+					
+					&:hover,
+					&:focus {
+						background-color: #7366e6;
+						border-color: #7366e6;
+					}
+					
+					&:disabled {
+						background-color: #ccc;
+						border-color: #ccc;
+						cursor: not-allowed;
+					}
+				}
+				
+				&.btn-link {
+					color: #8576f7;
+					text-decoration: none;
+					padding: 8px 10px;
+					
+					&:hover,
+					&:focus {
+						color: #7366e6;
+						text-decoration: underline;
+					}
+				}
+			}
+		}
+	}
+}
+
+// Loading spinner animation
+.glyphicon-refresh-animate {
+	animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+	from {
+		transform: scale(1) rotate(0deg);
+	}
+	to {
+		transform: scale(1) rotate(360deg);
+	}
+}
+
+// Navigation responsive adjustments
+@media (max-width: 768px) {
+	.site-header nav {
+		#guestNav,
+		#userNav {
+			.auth-link {
+				padding: 6px 8px;
+				font-size: 14px;
+			}
+		}
+		
+		.user-menu .dropdown-menu {
+			min-width: 160px;
+			right: 0;
+			left: auto;
+		}
+	}
+	
+	.modal {
+		&#loginModal,
+		&#registerModal,
+		&#resetModal {
+			.modal-dialog {
+				margin: 20px auto;
+				max-width: 90%;
+			}
+			
+			.modal-body {
+				padding: 20px;
+			}
+			
+			.modal-footer {
+				padding: 15px 20px;
+				
+				.btn {
+					display: block;
+					width: 100%;
+					margin: 5px 0;
+					
+					&:first-child {
+						margin-top: 0;
+					}
+					
+					&:last-child {
+						margin-bottom: 0;
+					}
+				}
+			}
+		}
+	}
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+	.auth-link {
+		border: 1px solid transparent;
+		
+		&:hover,
+		&:focus {
+			border-color: #2F2F31;
+		}
+	}
+	
+	.modal {
+		&#loginModal,
+		&#registerModal,
+		&#resetModal {
+			.modal-content {
+				border: 2px solid #2F2F31;
+			}
+			
+			.form-control {
+				border: 2px solid #2F2F31;
+				
+				&:focus {
+					border-color: #8576f7;
+					box-shadow: 0 0 0 3px rgba(133, 118, 247, 0.3);
+				}
+			}
+		}
+	}
+}
+
+// Focus management for accessibility
+.modal {
+	&#loginModal,
+	&#registerModal,
+	&#resetModal {
+		&.fade.in {
+			.modal-dialog {
+				.modal-content {
+					.modal-body {
+						.form-control:first-of-type {
+							// Auto-focus first input when modal opens
+							// (handled by JavaScript)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Print styles (hide auth elements when printing)
+@media print {
+	#guestNav,
+	#userNav,
+	.modal {
+		display: none !important;
+	}
+}

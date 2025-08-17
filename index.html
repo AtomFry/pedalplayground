@@ -57,8 +57,28 @@
 		<header class="site-header">
 			<h1><b>Pedal</b>Playground</h1>
 			<nav>
-				<!-- <a href="https://github.com/PedalPlayground/PedalPlayground.github.io/">Change Log</a> 
-				<a href="https://www.paypal.me/travlehman" target="_blank">Donate</a> -->
+				<!-- Guest User Navigation -->
+				<div id="guestNav" style="display: none;">
+					<a href="#" id="loginLink" class="auth-link">Login</a>
+				</div>
+				
+				<!-- Authenticated User Navigation -->
+				<div id="userNav" style="display: none;">
+					<div class="user-menu dropdown">
+						<a href="#" class="dropdown-toggle auth-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<span class="glyphicon glyphicon-user"></span>
+							<span id="userEmail"></span>
+							<span class="caret"></span>
+						</a>
+						<ul class="dropdown-menu dropdown-menu-right">
+							<li><a href="#" id="savedLayoutsLink"><span class="glyphicon glyphicon-floppy-disk"></span> My Layouts</a></li>
+							<li><a href="#" id="favoritesLink"><span class="glyphicon glyphicon-heart"></span> My Favorites</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="#" id="logoutLink"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+						</ul>
+					</div>
+				</div>
+				
 				<a style="vertical-align: middle; display: inline-flex" class="settings-trigger" href="#" target="_blank">
 					<svg xmlns="http://www.w3.org/2000/svg" width="27" height="18" fill="none">
 						<rect width="27" height="2" y="3" fill="#2F2F31" rx="1"/>
@@ -405,6 +425,124 @@
 						<a href="https://www.paypal.me/travlehman" target="_blank" class="btn btn-primary">
 							Donate
 						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Login Modal -->
+		<div id="loginModal" class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">Login to PedalPlayground</h4>
+					</div>
+					<div class="modal-body">
+						<form id="loginForm">
+							<div class="form-group">
+								<label for="loginEmail">Email:</label>
+								<input type="email" class="form-control" id="loginEmail" required>
+							</div>
+							<div class="form-group">
+								<label for="loginPassword">Password:</label>
+								<input type="password" class="form-control" id="loginPassword" required>
+							</div>
+							<div class="form-group">
+								<div class="alert alert-danger" id="loginError" style="display: none;"></div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" id="loginSubmit">
+							<span class="login-spinner" style="display: none;">
+								<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+							</span>
+							<span class="login-text">Login</span>
+						</button>
+						<button type="button" class="btn btn-link" id="showRegister">Create Account</button>
+						<button type="button" class="btn btn-link" id="showReset">Forgot Password?</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Registration Modal -->
+		<div id="registerModal" class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">Create Account</h4>
+					</div>
+					<div class="modal-body">
+						<form id="registerForm">
+							<div class="form-group">
+								<label for="registerEmail">Email:</label>
+								<input type="email" class="form-control" id="registerEmail" required>
+							</div>
+							<div class="form-group">
+								<label for="registerPassword">Password:</label>
+								<input type="password" class="form-control" id="registerPassword" required>
+								<small class="form-text text-muted">Must be at least 4 characters</small>
+							</div>
+							<div class="form-group">
+								<label for="confirmPassword">Confirm Password:</label>
+								<input type="password" class="form-control" id="confirmPassword" required>
+							</div>
+							<div class="form-group">
+								<div class="alert alert-danger" id="registerError" style="display: none;"></div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" id="registerSubmit">
+							<span class="register-spinner" style="display: none;">
+								<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+							</span>
+							<span class="register-text">Create Account</span>
+						</button>
+						<button type="button" class="btn btn-link" id="showLogin">Already have an account?</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Password Reset Modal -->
+		<div id="resetModal" class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">Reset Password</h4>
+					</div>
+					<div class="modal-body">
+						<form id="resetForm">
+							<div class="form-group">
+								<label for="resetEmail">Email:</label>
+								<input type="email" class="form-control" id="resetEmail" required>
+								<small class="form-text text-muted">We'll send you a link to reset your password</small>
+							</div>
+							<div class="form-group">
+								<div class="alert alert-danger" id="resetError" style="display: none;"></div>
+								<div class="alert alert-success" id="resetSuccess" style="display: none;"></div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" id="resetSubmit">
+							<span class="reset-spinner" style="display: none;">
+								<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+							</span>
+							<span class="reset-text">Send Reset Link</span>
+						</button>
+						<button type="button" class="btn btn-link" id="backToLogin">Back to Login</button>
 					</div>
 				</div>
 			</div>
