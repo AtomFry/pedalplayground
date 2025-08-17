@@ -1,0 +1,20 @@
+
+> PedalPlayground@1.0.0 api
+> node server/app.js
+
+✅ Connected to SQLite database
+🎸 Pedal Playground API Server
+================================
+🚀 Server running on http://localhost:3001
+📋 Health check: http://localhost:3001/api/health
+🎛️  Pedals API: http://localhost:3001/api/pedals
+📋 Pedalboards API: http://localhost:3001/api/pedalboards
+================================
+2025-08-17T13:10:45.490Z - GET /
+2025-08-17T13:10:48.193Z - GET /favicon.ico
+2025-08-17T13:10:59.258Z - GET /api/pedals
+2025-08-17T13:11:01.396Z - GET /favicon.ico
+2025-08-17T13:12:57.675Z - GET /api/health
+2025-08-17T13:12:59.822Z - GET /favicon.ico
+2025-08-17T13:13:08.019Z - GET /api/health
+2025-08-17T13:13:42.764Z - GET /api/pedals
