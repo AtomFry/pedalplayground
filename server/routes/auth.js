@@ -9,7 +9,8 @@ const router = express.Router();
 // Import utilities and middleware
 const db = require('../database/connection');
 const security = require('../utils/security');
-const { validateRegistration, validateLogin } = require('../middleware/validation');
+const emailService = require('../utils/email');
+const { validateRegistration, validateLogin, validatePasswordResetRequest, validatePasswordResetConfirm } = require('../middleware/validation');
 const { requireAuth, requireGuest, attachAuthUtils } = require('../middleware/auth');
 const { getRateLimiter } = require('../middleware/rateLimiter');
 
@@ -358,6 +359,172 @@ router.delete('/account',
                 success: false,
                 error: 'Failed to deactivate account. Please try again.',
                 code: 'ACCOUNT_DEACTIVATION_ERROR'
+            });
+        }
+    }
+);
+
+/**
+ * POST /api/auth/reset-password
+ * Request a password reset token
+ */
+router.post('/reset-password',
+    getRateLimiter('general'),
+    requireGuest,
+    validatePasswordResetRequest,
+    async (req, res) => {
+        try {
+            const { email } = req.body;
+
+            // Always return success to prevent email enumeration
+            // But only send email if user exists
+            const user = await db.get(
+                'SELECT id, email FROM users WHERE email = ? AND is_active = 1',
+                [email]
+            );
+
+            if (user) {
+                // Generate secure reset token
+                const resetToken = security.generateSecureToken();
+                const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+                // Store reset token in database
+                await db.run(
+                    `INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, created_at)
+                     VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
+                    [user.id, await security.hashToken(resetToken), tokenExpiry.toISOString()]
+                );
+
+                // Send reset email
+                const baseUrl = req.headers.origin || 'http://localhost:3000';
+                const emailSent = await emailService.sendPasswordResetEmail(
+                    user.email,
+                    resetToken,
+                    baseUrl
+                );
+
+                if (emailSent) {
+                    console.log(`✅ Password reset email sent to: ${email}`);
+                } else {
+                    console.log(`⚠️ Failed to send password reset email to: ${email}`);
+                }
+            } else {
+                console.log(`🔍 Password reset requested for non-existent email: ${email}`);
+            }
+
+            // Always return the same response regardless of whether user exists
+            res.json({
+                success: true,
+                message: 'If an account with that email exists, a password reset link has been sent.'
+            });
+
+        } catch (error) {
+            console.error('❌ Password reset request error:', error.message);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to process password reset request. Please try again.',
+                code: 'PASSWORD_RESET_ERROR'
+            });
+        }
+    }
+);
+
+/**
+ * POST /api/auth/reset-password/confirm
+ * Confirm password reset with token and set new password
+ */
+router.post('/reset-password/confirm',
+    getRateLimiter('general'),
+    requireGuest,
+    validatePasswordResetConfirm,
+    async (req, res) => {
+        try {
+            const { token, password } = req.body;
+
+            // Find and validate reset token
+            const resetRecord = await db.get(
+                `SELECT prt.user_id, prt.expires_at, u.email, u.is_active
+                 FROM password_reset_tokens prt
+                 JOIN users u ON prt.user_id = u.id
+                 WHERE prt.token_hash = ? AND prt.used_at IS NULL
+                 ORDER BY prt.created_at DESC
+                 LIMIT 1`,
+                [await security.hashToken(token)]
+            );
+
+            if (!resetRecord) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Invalid or expired reset token',
+                    code: 'INVALID_TOKEN'
+                });
+            }
+
+            // Check if user account is still active
+            if (!resetRecord.is_active) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Account is deactivated',
+                    code: 'ACCOUNT_DEACTIVATED'
+                });
+            }
+
+            // Check if token has expired
+            const tokenExpiry = new Date(resetRecord.expires_at);
+            const now = new Date();
+            if (now > tokenExpiry) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Reset token has expired. Please request a new one.',
+                    code: 'TOKEN_EXPIRED'
+                });
+            }
+
+            // Hash the new password
+            const passwordHash = await security.hashPassword(password);
+
+            // Begin transaction to update password and mark token as used
+            await db.run('BEGIN TRANSACTION');
+
+            try {
+                // Update user password
+                await db.run(
+                    'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    [passwordHash, resetRecord.user_id]
+                );
+
+                // Mark token as used
+                await db.run(
+                    'UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE user_id = ? AND token_hash = ?',
+                    [resetRecord.user_id, await security.hashToken(token)]
+                );
+
+                // Clean up expired tokens for this user
+                await db.run(
+                    'DELETE FROM password_reset_tokens WHERE user_id = ? AND expires_at < CURRENT_TIMESTAMP',
+                    [resetRecord.user_id]
+                );
+
+                await db.run('COMMIT');
+
+                console.log(`✅ Password reset completed for user: ${resetRecord.email} (ID: ${resetRecord.user_id})`);
+
+                res.json({
+                    success: true,
+                    message: 'Password reset successful. You can now log in with your new password.'
+                });
+
+            } catch (error) {
+                await db.run('ROLLBACK');
+                throw error;
+            }
+
+        } catch (error) {
+            console.error('❌ Password reset confirmation error:', error.message);
+            res.status(500).json({
+                success: false,
+                error: 'Failed to reset password. Please try again.',
+                code: 'PASSWORD_RESET_CONFIRM_ERROR'
             });
         }
     }

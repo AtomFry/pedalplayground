@@ -51,7 +51,8 @@
 	// Override Bootstrap modal styles for auth modals
 	&#loginModal,
 	&#registerModal,
-	&#resetModal {
+	&#resetModal,
+	&#resetConfirmModal {
 		.modal-dialog {
 			max-width: 400px;
 			margin: 60px auto;
@@ -89,6 +90,19 @@
 						border-color: #8576f7;
 						box-shadow: 0 0 0 3px rgba(133, 118, 247, 0.1);
 						outline: none;
+					}
+					
+					&[readonly] {
+						background-color: #f8f9fa;
+						color: #6c757d;
+						cursor: not-allowed;
+						font-family: monospace;
+						font-size: 12px;
+						
+						&:focus {
+							border-color: #ddd;
+							box-shadow: none;
+						}
 					}
 				}
 				
@@ -200,7 +214,8 @@
 	.modal {
 		&#loginModal,
 		&#registerModal,
-		&#resetModal {
+		&#resetModal,
+		&#resetConfirmModal {
 			.modal-dialog {
 				margin: 20px auto;
 				max-width: 90%;
@@ -245,7 +260,8 @@
 	.modal {
 		&#loginModal,
 		&#registerModal,
-		&#resetModal {
+		&#resetModal,
+		&#resetConfirmModal {
 			.modal-content {
 				border: 2px solid #2F2F31;
 			}
@@ -266,7 +282,8 @@
 .modal {
 	&#loginModal,
 	&#registerModal,
-	&#resetModal {
+	&#resetModal,
+	&#resetConfirmModal {
 		&.fade.in {
 			.modal-dialog {
 				.modal-content {

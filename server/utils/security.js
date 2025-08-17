@@ -152,6 +152,21 @@ function generatePasswordResetToken() {
 }
 
 /**
+ * Hash a token for secure storage in database
+ * @param {string} token - Plain text token
+ * @returns {Promise<string>} - Hashed token
+ */
+async function hashToken(token) {
+    try {
+        const hash = await bcrypt.hash(token, SALT_ROUNDS);
+        return hash;
+    } catch (error) {
+        console.error('❌ Error hashing token:', error.message);
+        throw new Error('Token hashing failed');
+    }
+}
+
+/**
  * Validate user registration data
  * @param {Object} userData - User registration data
  * @returns {Object} - Validation result
@@ -222,6 +237,7 @@ module.exports = {
     sanitizeInput,
     generateSecureToken,
     generatePasswordResetToken,
+    hashToken,
     validateUserRegistration,
     validateUserLogin,
     isTokenExpired,

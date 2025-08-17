@@ -157,6 +157,391 @@ window.APIService = {
 	}
 };
 
+// Authentication Manager for handling user login/logout and session management
+window.AuthManager = {
+	currentUser: null,
+	
+	init: function() {
+		this.bindEvents();
+		this.checkAuthStatus();
+		this.checkForResetToken();
+	},
+	
+	bindEvents: function() {
+		// Modal event handlers
+		$('#loginLink').click(this.showLoginModal.bind(this));
+		$('#loginSubmit').click(this.handleLogin.bind(this));
+		$('#registerSubmit').click(this.handleRegister.bind(this));
+		$('#logoutLink').click(this.handleLogout.bind(this));
+		$('#showRegister').click(this.showRegisterModal.bind(this));
+		$('#showLogin').click(this.showLoginModal.bind(this));
+		$('#showReset').click(this.showResetModal.bind(this));
+		$('#backToLogin').click(this.showLoginModal.bind(this));
+		$('#resetSubmit').click(this.handlePasswordReset.bind(this));
+		$('#resetConfirmSubmit').click(this.handlePasswordResetConfirm.bind(this));
+		
+		// Form submission handlers
+		$('#loginForm').submit(this.handleLogin.bind(this));
+		$('#registerForm').submit(this.handleRegister.bind(this));
+		$('#resetForm').submit(this.handlePasswordReset.bind(this));
+		$('#resetConfirmForm').submit(this.handlePasswordResetConfirm.bind(this));
+		
+		// Clear errors when modals are shown
+		$('#loginModal').on('show.bs.modal', function() {
+			$('#loginError').hide();
+			$('#loginForm')[0].reset();
+		});
+		
+		$('#registerModal').on('show.bs.modal', function() {
+			$('#registerError').hide();
+			$('#registerForm')[0].reset();
+		});
+		
+		$('#resetModal').on('show.bs.modal', function() {
+			$('#resetError, #resetSuccess').hide();
+			$('#resetForm')[0].reset();
+		});
+		
+		$('#resetConfirmModal').on('show.bs.modal', function() {
+			$('#resetConfirmError, #resetConfirmSuccess').hide();
+			// Don't reset the form since token might be pre-populated
+		});
+	},
+	
+	checkAuthStatus: function() {
+		var self = this;
+		$.ajax({
+			url: APIService.baseURL + '/auth/status',
+			method: 'GET',
+			success: function(response) {
+				if (response.success && response.authenticated) {
+					self.setAuthenticatedState(response.user);
+				} else {
+					self.setGuestState();
+				}
+			},
+			error: function() {
+				self.setGuestState();
+			}
+		});
+	},
+	
+	handleLogin: function(e) {
+		e.preventDefault();
+		var self = this;
+		var email = $('#loginEmail').val().trim();
+		var password = $('#loginPassword').val();
+		
+		// Clear previous errors
+		$('#loginError').hide();
+		
+		if (!email || !password) {
+			this.showError('#loginError', 'Please enter both email and password');
+			return;
+		}
+		
+		this.setLoading('#loginSubmit', '.login-spinner', '.login-text', 'Logging in...');
+		
+		$.ajax({
+			url: APIService.baseURL + '/auth/login',
+			method: 'POST',
+			data: JSON.stringify({ email: email, password: password }),
+			contentType: 'application/json',
+			success: function(response) {
+				self.clearLoading('#loginSubmit', '.login-spinner', '.login-text', 'Login');
+				
+				if (response.success) {
+					$('#loginModal').modal('hide');
+					self.setAuthenticatedState(response.user);
+					self.syncLocalData();
+				} else {
+					self.showError('#loginError', response.error || 'Login failed');
+				}
+			},
+			error: function(xhr) {
+				self.clearLoading('#loginSubmit', '.login-spinner', '.login-text', 'Login');
+				var errorMsg = 'Login failed. Please try again.';
+				
+				if (xhr.responseJSON && xhr.responseJSON.error) {
+					errorMsg = xhr.responseJSON.error;
+				}
+				
+				self.showError('#loginError', errorMsg);
+			}
+		});
+	},
+	
+	handleRegister: function(e) {
+		e.preventDefault();
+		var self = this;
+		var email = $('#registerEmail').val().trim();
+		var password = $('#registerPassword').val();
+		var confirmPassword = $('#confirmPassword').val();
+		
+		// Clear previous errors
+		$('#registerError').hide();
+		
+		// Validate form
+		if (!email || !password || !confirmPassword) {
+			this.showError('#registerError', 'Please fill in all fields');
+			return;
+		}
+		
+		if (password !== confirmPassword) {
+			this.showError('#registerError', 'Passwords do not match');
+			return;
+		}
+		
+		if (password.length < 4) {
+			this.showError('#registerError', 'Password must be at least 4 characters long');
+			return;
+		}
+		
+		this.setLoading('#registerSubmit', '.register-spinner', '.register-text', 'Creating...');
+		
+		$.ajax({
+			url: APIService.baseURL + '/auth/register',
+			method: 'POST',
+			data: JSON.stringify({ email: email, password: password }),
+			contentType: 'application/json',
+			success: function(response) {
+				self.clearLoading('#registerSubmit', '.register-spinner', '.register-text', 'Create Account');
+				
+				if (response.success) {
+					$('#registerModal').modal('hide');
+					self.setAuthenticatedState(response.user);
+					self.syncLocalData();
+				} else {
+					self.showError('#registerError', response.error || 'Registration failed');
+				}
+			},
+			error: function(xhr) {
+				self.clearLoading('#registerSubmit', '.register-spinner', '.register-text', 'Create Account');
+				var errorMsg = 'Registration failed. Please try again.';
+				
+				if (xhr.responseJSON && xhr.responseJSON.error) {
+					errorMsg = xhr.responseJSON.error;
+				}
+				
+				self.showError('#registerError', errorMsg);
+			}
+		});
+	},
+	
+	handleLogout: function(e) {
+		e.preventDefault();
+		var self = this;
+		
+		$.ajax({
+			url: APIService.baseURL + '/auth/logout',
+			method: 'POST',
+			success: function() {
+				self.setGuestState();
+			},
+			error: function() {
+				// Even if logout fails, clear local state
+				self.setGuestState();
+			}
+		});
+	},
+	
+	handlePasswordReset: function(e) {
+		e.preventDefault();
+		var self = this;
+		var email = $('#resetEmail').val().trim();
+		
+		if (!email) {
+			this.showError('#resetError', 'Please enter your email address');
+			return;
+		}
+		
+		this.setLoading('#resetSubmit', '.reset-spinner', '.reset-text', 'Sending...');
+		
+		$.ajax({
+			url: APIService.baseURL + '/auth/reset-password',
+			method: 'POST',
+			data: JSON.stringify({ email: email }),
+			contentType: 'application/json',
+			success: function(response) {
+				self.clearLoading('#resetSubmit', '.reset-spinner', '.reset-text', 'Send Reset Link');
+				
+				if (response.success) {
+					$('#resetError').hide();
+					$('#resetSuccess').text('Password reset link sent to your email').show();
+				} else {
+					self.showError('#resetError', response.error || 'Reset failed');
+				}
+			},
+			error: function(xhr) {
+				self.clearLoading('#resetSubmit', '.reset-spinner', '.reset-text', 'Send Reset Link');
+				var errorMsg = 'Failed to send reset email. Please try again.';
+				
+				if (xhr.responseJSON && xhr.responseJSON.error) {
+					errorMsg = xhr.responseJSON.error;
+				}
+				
+				self.showError('#resetError', errorMsg);
+			}
+		});
+	},
+	
+	handlePasswordResetConfirm: function(e) {
+		e.preventDefault();
+		var self = this;
+		var token = $('#resetConfirmToken').val();
+		var password = $('#resetConfirmPassword').val();
+		var confirmPassword = $('#resetConfirmPasswordConfirm').val();
+		
+		// Clear previous errors
+		$('#resetConfirmError').hide();
+		
+		// Validate inputs
+		if (!token) {
+			this.showError('#resetConfirmError', 'Reset token is required');
+			return;
+		}
+		
+		if (!password) {
+			this.showError('#resetConfirmError', 'New password is required');
+			return;
+		}
+		
+		if (password !== confirmPassword) {
+			this.showError('#resetConfirmError', 'Passwords do not match');
+			return;
+		}
+		
+		if (password.length < 4) {
+			this.showError('#resetConfirmError', 'Password must be at least 4 characters long');
+			return;
+		}
+		
+		this.setLoading('#resetConfirmSubmit', '.reset-confirm-spinner', '.reset-confirm-text', 'Resetting...');
+		
+		$.ajax({
+			url: APIService.baseURL + '/auth/reset-password/confirm',
+			method: 'POST',
+			data: JSON.stringify({ 
+				token: token,
+				password: password 
+			}),
+			contentType: 'application/json',
+			success: function(response) {
+				self.clearLoading('#resetConfirmSubmit', '.reset-confirm-spinner', '.reset-confirm-text', 'Reset Password');
+				
+				if (response.success) {
+					$('#resetConfirmError').hide();
+					$('#resetConfirmSuccess').text('Password reset successful! You can now log in with your new password.').show();
+					
+					// Clear the form
+					$('#resetConfirmForm')[0].reset();
+					
+					// After a delay, close modal and show login
+					setTimeout(function() {
+						$('#resetConfirmModal').modal('hide');
+						self.showLoginModal();
+					}, 3000);
+				} else {
+					self.showError('#resetConfirmError', response.error || 'Password reset failed');
+				}
+			},
+			error: function(xhr) {
+				self.clearLoading('#resetConfirmSubmit', '.reset-confirm-spinner', '.reset-confirm-text', 'Reset Password');
+				var errorMsg = 'Password reset failed. Please try again.';
+				
+				if (xhr.responseJSON && xhr.responseJSON.error) {
+					errorMsg = xhr.responseJSON.error;
+				}
+				
+				self.showError('#resetConfirmError', errorMsg);
+			}
+		});
+	},
+	
+	checkForResetToken: function() {
+		// Check URL hash for reset token
+		var hash = window.location.hash;
+		if (hash && hash.includes('reset-password')) {
+			var urlParams = new URLSearchParams(hash.replace('#reset-password?', ''));
+			var token = urlParams.get('token');
+			
+			if (token) {
+				// Populate the reset confirmation modal with the token
+				$('#resetConfirmToken').val(token);
+				this.showResetConfirmModal();
+			}
+		}
+	},
+	
+	showResetConfirmModal: function() {
+		$('#loginModal, #registerModal, #resetModal').modal('hide');
+		$('#resetConfirmModal').modal('show');
+	},
+	
+	setAuthenticatedState: function(user) {
+		this.currentUser = user;
+		$('#userEmail').text(user.email);
+		$('#userNav').show();
+		$('#guestNav').hide();
+		console.log('User authenticated:', user.email);
+	},
+	
+	setGuestState: function() {
+		this.currentUser = null;
+		$('#userNav').hide();
+		$('#guestNav').show();
+		console.log('User logged out');
+	},
+	
+	showLoginModal: function(e) {
+		if (e) e.preventDefault();
+		$('#registerModal, #resetModal').modal('hide');
+		$('#loginModal').modal('show');
+	},
+	
+	showRegisterModal: function(e) {
+		if (e) e.preventDefault();
+		$('#loginModal, #resetModal').modal('hide');
+		$('#registerModal').modal('show');
+	},
+	
+	showResetModal: function(e) {
+		if (e) e.preventDefault();
+		$('#loginModal, #registerModal').modal('hide');
+		$('#resetModal').modal('show');
+	},
+	
+	showError: function(selector, message) {
+		$(selector).text(message).show();
+	},
+	
+	setLoading: function(buttonSelector, spinnerSelector, textSelector, loadingText) {
+		$(buttonSelector).prop('disabled', true);
+		$(buttonSelector + ' ' + spinnerSelector).show();
+		$(buttonSelector + ' ' + textSelector).text(loadingText);
+	},
+	
+	clearLoading: function(buttonSelector, spinnerSelector, textSelector, originalText) {
+		$(buttonSelector).prop('disabled', false);
+		$(buttonSelector + ' ' + spinnerSelector).hide();
+		$(buttonSelector + ' ' + textSelector).text(originalText);
+	},
+	
+	syncLocalData: function() {
+		// TODO: Sync any local favorites/layouts to server
+		// This will be implemented in Phase 2 and 3
+		console.log('Syncing local data (placeholder)');
+	},
+	
+	isAuthenticated: function() {
+		return this.currentUser !== null;
+	},
+	
+	getCurrentUser: function() {
+		return this.currentUser;
+	}
+};
+
 // UI Helper Functions for loading states and error handling
 function showLoadingMessage(message) {
 	$('.pedal-list, .pedalboard-list').prop('disabled', true);
@@ -176,6 +561,8 @@ function showErrorMessage(message) {
 }
 
 $(document).ready(function () {
+	// Initialize Authentication Manager
+	AuthManager.init();
 	
 	// Check API health before loading data
 	APIService.checkHealth(

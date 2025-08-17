@@ -8347,92 +8347,103 @@ body .btn {
   margin: 6px 0;
 }
 
-.modal#loginModal .modal-dialog, .modal#registerModal .modal-dialog, .modal#resetModal .modal-dialog {
+.modal#loginModal .modal-dialog, .modal#registerModal .modal-dialog, .modal#resetModal .modal-dialog, .modal#resetConfirmModal .modal-dialog {
   max-width: 400px;
   margin: 60px auto;
 }
-.modal#loginModal .modal-header, .modal#registerModal .modal-header, .modal#resetModal .modal-header {
+.modal#loginModal .modal-header, .modal#registerModal .modal-header, .modal#resetModal .modal-header, .modal#resetConfirmModal .modal-header {
   border-bottom: 2px solid #8576f7;
 }
-.modal#loginModal .modal-header .modal-title, .modal#registerModal .modal-header .modal-title, .modal#resetModal .modal-header .modal-title {
+.modal#loginModal .modal-header .modal-title, .modal#registerModal .modal-header .modal-title, .modal#resetModal .modal-header .modal-title, .modal#resetConfirmModal .modal-header .modal-title {
   color: #2F2F31;
   font-weight: 600;
 }
-.modal#loginModal .modal-body, .modal#registerModal .modal-body, .modal#resetModal .modal-body {
+.modal#loginModal .modal-body, .modal#registerModal .modal-body, .modal#resetModal .modal-body, .modal#resetConfirmModal .modal-body {
   padding: 30px;
 }
-.modal#loginModal .modal-body .form-group, .modal#registerModal .modal-body .form-group, .modal#resetModal .modal-body .form-group {
+.modal#loginModal .modal-body .form-group, .modal#registerModal .modal-body .form-group, .modal#resetModal .modal-body .form-group, .modal#resetConfirmModal .modal-body .form-group {
   margin-bottom: 20px;
 }
-.modal#loginModal .modal-body .form-group label, .modal#registerModal .modal-body .form-group label, .modal#resetModal .modal-body .form-group label {
+.modal#loginModal .modal-body .form-group label, .modal#registerModal .modal-body .form-group label, .modal#resetModal .modal-body .form-group label, .modal#resetConfirmModal .modal-body .form-group label {
   font-weight: 500;
   color: #2F2F31;
   margin-bottom: 6px;
 }
-.modal#loginModal .modal-body .form-group .form-control, .modal#registerModal .modal-body .form-group .form-control, .modal#resetModal .modal-body .form-group .form-control {
+.modal#loginModal .modal-body .form-group .form-control, .modal#registerModal .modal-body .form-group .form-control, .modal#resetModal .modal-body .form-group .form-control, .modal#resetConfirmModal .modal-body .form-group .form-control {
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 10px 12px;
   font-size: 14px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.modal#loginModal .modal-body .form-group .form-control:focus, .modal#registerModal .modal-body .form-group .form-control:focus, .modal#resetModal .modal-body .form-group .form-control:focus {
+.modal#loginModal .modal-body .form-group .form-control:focus, .modal#registerModal .modal-body .form-group .form-control:focus, .modal#resetModal .modal-body .form-group .form-control:focus, .modal#resetConfirmModal .modal-body .form-group .form-control:focus {
   border-color: #8576f7;
   box-shadow: 0 0 0 3px rgba(133, 118, 247, 0.1);
   outline: none;
 }
-.modal#loginModal .modal-body .form-group .form-text, .modal#registerModal .modal-body .form-group .form-text, .modal#resetModal .modal-body .form-group .form-text {
+.modal#loginModal .modal-body .form-group .form-control[readonly], .modal#registerModal .modal-body .form-group .form-control[readonly], .modal#resetModal .modal-body .form-group .form-control[readonly], .modal#resetConfirmModal .modal-body .form-group .form-control[readonly] {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  font-family: monospace;
+  font-size: 12px;
+}
+.modal#loginModal .modal-body .form-group .form-control[readonly]:focus, .modal#registerModal .modal-body .form-group .form-control[readonly]:focus, .modal#resetModal .modal-body .form-group .form-control[readonly]:focus, .modal#resetConfirmModal .modal-body .form-group .form-control[readonly]:focus {
+  border-color: #ddd;
+  box-shadow: none;
+}
+.modal#loginModal .modal-body .form-group .form-text, .modal#registerModal .modal-body .form-group .form-text, .modal#resetModal .modal-body .form-group .form-text, .modal#resetConfirmModal .modal-body .form-group .form-text {
   font-size: 12px;
   color: #666;
   margin-top: 4px;
 }
-.modal#loginModal .modal-body .alert, .modal#registerModal .modal-body .alert, .modal#resetModal .modal-body .alert {
+.modal#loginModal .modal-body .alert, .modal#registerModal .modal-body .alert, .modal#resetModal .modal-body .alert, .modal#resetConfirmModal .modal-body .alert {
   font-size: 14px;
   margin-bottom: 10px;
   padding: 10px 12px;
   border-radius: 4px;
 }
-.modal#loginModal .modal-body .alert.alert-danger, .modal#registerModal .modal-body .alert.alert-danger, .modal#resetModal .modal-body .alert.alert-danger {
+.modal#loginModal .modal-body .alert.alert-danger, .modal#registerModal .modal-body .alert.alert-danger, .modal#resetModal .modal-body .alert.alert-danger, .modal#resetConfirmModal .modal-body .alert.alert-danger {
   background-color: #f8d7da;
   border-color: #f5c6cb;
   color: #721c24;
 }
-.modal#loginModal .modal-body .alert.alert-success, .modal#registerModal .modal-body .alert.alert-success, .modal#resetModal .modal-body .alert.alert-success {
+.modal#loginModal .modal-body .alert.alert-success, .modal#registerModal .modal-body .alert.alert-success, .modal#resetModal .modal-body .alert.alert-success, .modal#resetConfirmModal .modal-body .alert.alert-success {
   background-color: #d4edda;
   border-color: #c3e6cb;
   color: #155724;
 }
-.modal#loginModal .modal-footer, .modal#registerModal .modal-footer, .modal#resetModal .modal-footer {
+.modal#loginModal .modal-footer, .modal#registerModal .modal-footer, .modal#resetModal .modal-footer, .modal#resetConfirmModal .modal-footer {
   border-top: 1px solid #e5e5e5;
   padding: 20px 30px;
 }
-.modal#loginModal .modal-footer .btn, .modal#registerModal .modal-footer .btn, .modal#resetModal .modal-footer .btn {
+.modal#loginModal .modal-footer .btn, .modal#registerModal .modal-footer .btn, .modal#resetModal .modal-footer .btn, .modal#resetConfirmModal .modal-footer .btn {
   margin-left: 10px;
 }
-.modal#loginModal .modal-footer .btn:first-child, .modal#registerModal .modal-footer .btn:first-child, .modal#resetModal .modal-footer .btn:first-child {
+.modal#loginModal .modal-footer .btn:first-child, .modal#registerModal .modal-footer .btn:first-child, .modal#resetModal .modal-footer .btn:first-child, .modal#resetConfirmModal .modal-footer .btn:first-child {
   margin-left: 0;
 }
-.modal#loginModal .modal-footer .btn.btn-primary, .modal#registerModal .modal-footer .btn.btn-primary, .modal#resetModal .modal-footer .btn.btn-primary {
+.modal#loginModal .modal-footer .btn.btn-primary, .modal#registerModal .modal-footer .btn.btn-primary, .modal#resetModal .modal-footer .btn.btn-primary, .modal#resetConfirmModal .modal-footer .btn.btn-primary {
   background-color: #8576f7;
   border-color: #8576f7;
   padding: 8px 20px;
   font-weight: 500;
 }
-.modal#loginModal .modal-footer .btn.btn-primary:hover, .modal#loginModal .modal-footer .btn.btn-primary:focus, .modal#registerModal .modal-footer .btn.btn-primary:hover, .modal#registerModal .modal-footer .btn.btn-primary:focus, .modal#resetModal .modal-footer .btn.btn-primary:hover, .modal#resetModal .modal-footer .btn.btn-primary:focus {
+.modal#loginModal .modal-footer .btn.btn-primary:hover, .modal#loginModal .modal-footer .btn.btn-primary:focus, .modal#registerModal .modal-footer .btn.btn-primary:hover, .modal#registerModal .modal-footer .btn.btn-primary:focus, .modal#resetModal .modal-footer .btn.btn-primary:hover, .modal#resetModal .modal-footer .btn.btn-primary:focus, .modal#resetConfirmModal .modal-footer .btn.btn-primary:hover, .modal#resetConfirmModal .modal-footer .btn.btn-primary:focus {
   background-color: #7366e6;
   border-color: #7366e6;
 }
-.modal#loginModal .modal-footer .btn.btn-primary:disabled, .modal#registerModal .modal-footer .btn.btn-primary:disabled, .modal#resetModal .modal-footer .btn.btn-primary:disabled {
+.modal#loginModal .modal-footer .btn.btn-primary:disabled, .modal#registerModal .modal-footer .btn.btn-primary:disabled, .modal#resetModal .modal-footer .btn.btn-primary:disabled, .modal#resetConfirmModal .modal-footer .btn.btn-primary:disabled {
   background-color: #ccc;
   border-color: #ccc;
   cursor: not-allowed;
 }
-.modal#loginModal .modal-footer .btn.btn-link, .modal#registerModal .modal-footer .btn.btn-link, .modal#resetModal .modal-footer .btn.btn-link {
+.modal#loginModal .modal-footer .btn.btn-link, .modal#registerModal .modal-footer .btn.btn-link, .modal#resetModal .modal-footer .btn.btn-link, .modal#resetConfirmModal .modal-footer .btn.btn-link {
   color: #8576f7;
   text-decoration: none;
   padding: 8px 10px;
 }
-.modal#loginModal .modal-footer .btn.btn-link:hover, .modal#loginModal .modal-footer .btn.btn-link:focus, .modal#registerModal .modal-footer .btn.btn-link:hover, .modal#registerModal .modal-footer .btn.btn-link:focus, .modal#resetModal .modal-footer .btn.btn-link:hover, .modal#resetModal .modal-footer .btn.btn-link:focus {
+.modal#loginModal .modal-footer .btn.btn-link:hover, .modal#loginModal .modal-footer .btn.btn-link:focus, .modal#registerModal .modal-footer .btn.btn-link:hover, .modal#registerModal .modal-footer .btn.btn-link:focus, .modal#resetModal .modal-footer .btn.btn-link:hover, .modal#resetModal .modal-footer .btn.btn-link:focus, .modal#resetConfirmModal .modal-footer .btn.btn-link:hover, .modal#resetConfirmModal .modal-footer .btn.btn-link:focus {
   color: #7366e6;
   text-decoration: underline;
 }
@@ -8460,25 +8471,25 @@ body .btn {
     right: 0;
     left: auto;
   }
-  .modal#loginModal .modal-dialog, .modal#registerModal .modal-dialog, .modal#resetModal .modal-dialog {
+  .modal#loginModal .modal-dialog, .modal#registerModal .modal-dialog, .modal#resetModal .modal-dialog, .modal#resetConfirmModal .modal-dialog {
     margin: 20px auto;
     max-width: 90%;
   }
-  .modal#loginModal .modal-body, .modal#registerModal .modal-body, .modal#resetModal .modal-body {
+  .modal#loginModal .modal-body, .modal#registerModal .modal-body, .modal#resetModal .modal-body, .modal#resetConfirmModal .modal-body {
     padding: 20px;
   }
-  .modal#loginModal .modal-footer, .modal#registerModal .modal-footer, .modal#resetModal .modal-footer {
+  .modal#loginModal .modal-footer, .modal#registerModal .modal-footer, .modal#resetModal .modal-footer, .modal#resetConfirmModal .modal-footer {
     padding: 15px 20px;
   }
-  .modal#loginModal .modal-footer .btn, .modal#registerModal .modal-footer .btn, .modal#resetModal .modal-footer .btn {
+  .modal#loginModal .modal-footer .btn, .modal#registerModal .modal-footer .btn, .modal#resetModal .modal-footer .btn, .modal#resetConfirmModal .modal-footer .btn {
     display: block;
     width: 100%;
     margin: 5px 0;
   }
-  .modal#loginModal .modal-footer .btn:first-child, .modal#registerModal .modal-footer .btn:first-child, .modal#resetModal .modal-footer .btn:first-child {
+  .modal#loginModal .modal-footer .btn:first-child, .modal#registerModal .modal-footer .btn:first-child, .modal#resetModal .modal-footer .btn:first-child, .modal#resetConfirmModal .modal-footer .btn:first-child {
     margin-top: 0;
   }
-  .modal#loginModal .modal-footer .btn:last-child, .modal#registerModal .modal-footer .btn:last-child, .modal#resetModal .modal-footer .btn:last-child {
+  .modal#loginModal .modal-footer .btn:last-child, .modal#registerModal .modal-footer .btn:last-child, .modal#resetModal .modal-footer .btn:last-child, .modal#resetConfirmModal .modal-footer .btn:last-child {
     margin-bottom: 0;
   }
 }
@@ -8489,13 +8500,13 @@ body .btn {
   .auth-link:hover, .auth-link:focus {
     border-color: #2F2F31;
   }
-  .modal#loginModal .modal-content, .modal#registerModal .modal-content, .modal#resetModal .modal-content {
+  .modal#loginModal .modal-content, .modal#registerModal .modal-content, .modal#resetModal .modal-content, .modal#resetConfirmModal .modal-content {
     border: 2px solid #2F2F31;
   }
-  .modal#loginModal .form-control, .modal#registerModal .form-control, .modal#resetModal .form-control {
+  .modal#loginModal .form-control, .modal#registerModal .form-control, .modal#resetModal .form-control, .modal#resetConfirmModal .form-control {
     border: 2px solid #2F2F31;
   }
-  .modal#loginModal .form-control:focus, .modal#registerModal .form-control:focus, .modal#resetModal .form-control:focus {
+  .modal#loginModal .form-control:focus, .modal#registerModal .form-control:focus, .modal#resetModal .form-control:focus, .modal#resetConfirmModal .form-control:focus {
     border-color: #8576f7;
     box-shadow: 0 0 0 3px rgba(133, 118, 247, 0.3);
   }

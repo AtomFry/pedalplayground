@@ -58,7 +58,7 @@
 			<h1><b>Pedal</b>Playground</h1>
 			<nav>
 				<!-- Guest User Navigation -->
-				<div id="guestNav" style="display: none;">
+				<div id="guestNav">
 					<a href="#" id="loginLink" class="auth-link">Login</a>
 				</div>
 				
@@ -543,6 +543,51 @@
 							<span class="reset-text">Send Reset Link</span>
 						</button>
 						<button type="button" class="btn btn-link" id="backToLogin">Back to Login</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Password Reset Confirmation Modal -->
+		<div id="resetConfirmModal" class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+						<h4 class="modal-title">Set New Password</h4>
+					</div>
+					<div class="modal-body">
+						<form id="resetConfirmForm">
+							<div class="form-group">
+								<label for="resetConfirmToken">Reset Token:</label>
+								<input type="text" class="form-control" id="resetConfirmToken" readonly>
+								<small class="form-text text-muted">This token was provided in your password reset email</small>
+							</div>
+							<div class="form-group">
+								<label for="resetConfirmPassword">New Password:</label>
+								<input type="password" class="form-control" id="resetConfirmPassword" required>
+								<small class="form-text text-muted">Must be at least 4 characters</small>
+							</div>
+							<div class="form-group">
+								<label for="resetConfirmPasswordConfirm">Confirm New Password:</label>
+								<input type="password" class="form-control" id="resetConfirmPasswordConfirm" required>
+							</div>
+							<div class="form-group">
+								<div class="alert alert-danger" id="resetConfirmError" style="display: none;"></div>
+								<div class="alert alert-success" id="resetConfirmSuccess" style="display: none;"></div>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" id="resetConfirmSubmit">
+							<span class="reset-confirm-spinner" style="display: none;">
+								<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+							</span>
+							<span class="reset-confirm-text">Reset Password</span>
+						</button>
+						<button type="button" class="btn btn-link" data-dismiss="modal">Cancel</button>
 					</div>
 				</div>
 			</div>

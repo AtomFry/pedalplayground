@@ -163,6 +163,7 @@ window.AuthManager = {
 	init: function() {
 		this.bindEvents();
 		this.checkAuthStatus();
+		this.checkForResetToken();
 	},
 	
 	bindEvents: function() {
@@ -176,11 +177,13 @@ window.AuthManager = {
 		$('#showReset').click(this.showResetModal.bind(this));
 		$('#backToLogin').click(this.showLoginModal.bind(this));
 		$('#resetSubmit').click(this.handlePasswordReset.bind(this));
+		$('#resetConfirmSubmit').click(this.handlePasswordResetConfirm.bind(this));
 		
 		// Form submission handlers
 		$('#loginForm').submit(this.handleLogin.bind(this));
 		$('#registerForm').submit(this.handleRegister.bind(this));
 		$('#resetForm').submit(this.handlePasswordReset.bind(this));
+		$('#resetConfirmForm').submit(this.handlePasswordResetConfirm.bind(this));
 		
 		// Clear errors when modals are shown
 		$('#loginModal').on('show.bs.modal', function() {
@@ -196,6 +199,11 @@ window.AuthManager = {
 		$('#resetModal').on('show.bs.modal', function() {
 			$('#resetError, #resetSuccess').hide();
 			$('#resetForm')[0].reset();
+		});
+		
+		$('#resetConfirmModal').on('show.bs.modal', function() {
+			$('#resetConfirmError, #resetConfirmSuccess').hide();
+			// Don't reset the form since token might be pre-populated
 		});
 	},
 	
@@ -341,7 +349,7 @@ window.AuthManager = {
 		this.setLoading('#resetSubmit', '.reset-spinner', '.reset-text', 'Sending...');
 		
 		$.ajax({
-			url: APIService.baseURL + '/auth/reset-request',
+			url: APIService.baseURL + '/auth/reset-password',
 			method: 'POST',
 			data: JSON.stringify({ email: email }),
 			contentType: 'application/json',
@@ -415,6 +423,99 @@ window.AuthManager = {
 		$(buttonSelector).prop('disabled', false);
 		$(buttonSelector + ' ' + spinnerSelector).hide();
 		$(buttonSelector + ' ' + textSelector).text(originalText);
+	},
+	
+	handlePasswordResetConfirm: function(e) {
+		e.preventDefault();
+		var self = this;
+		var token = $('#resetConfirmToken').val();
+		var password = $('#resetConfirmPassword').val();
+		var confirmPassword = $('#resetConfirmPasswordConfirm').val();
+		
+		// Clear previous errors
+		$('#resetConfirmError').hide();
+		
+		// Validate inputs
+		if (!token) {
+			this.showError('#resetConfirmError', 'Reset token is required');
+			return;
+		}
+		
+		if (!password) {
+			this.showError('#resetConfirmError', 'New password is required');
+			return;
+		}
+		
+		if (password !== confirmPassword) {
+			this.showError('#resetConfirmError', 'Passwords do not match');
+			return;
+		}
+		
+		if (password.length < 4) {
+			this.showError('#resetConfirmError', 'Password must be at least 4 characters long');
+			return;
+		}
+		
+		this.setLoading('#resetConfirmSubmit', '.reset-confirm-spinner', '.reset-confirm-text', 'Resetting...');
+		
+		$.ajax({
+			url: APIService.baseURL + '/auth/reset-password/confirm',
+			method: 'POST',
+			data: JSON.stringify({ 
+				token: token,
+				password: password 
+			}),
+			contentType: 'application/json',
+			success: function(response) {
+				self.clearLoading('#resetConfirmSubmit', '.reset-confirm-spinner', '.reset-confirm-text', 'Reset Password');
+				
+				if (response.success) {
+					$('#resetConfirmError').hide();
+					$('#resetConfirmSuccess').text('Password reset successful! You can now log in with your new password.').show();
+					
+					// Clear the form
+					$('#resetConfirmForm')[0].reset();
+					
+					// After a delay, close modal and show login
+					setTimeout(function() {
+						$('#resetConfirmModal').modal('hide');
+						self.showLoginModal();
+					}, 3000);
+				} else {
+					self.showError('#resetConfirmError', response.error || 'Password reset failed');
+				}
+			},
+			error: function(xhr) {
+				self.clearLoading('#resetConfirmSubmit', '.reset-confirm-spinner', '.reset-confirm-text', 'Reset Password');
+				var errorMsg = 'Password reset failed. Please try again.';
+				
+				if (xhr.responseJSON && xhr.responseJSON.error) {
+					errorMsg = xhr.responseJSON.error;
+				}
+				
+				self.showError('#resetConfirmError', errorMsg);
+			}
+		});
+	},
+	
+	checkForResetToken: function() {
+		// Check URL hash for reset token
+		var hash = window.location.hash;
+		if (hash && hash.includes('reset-password')) {
+			var urlParams = new URLSearchParams(hash.replace('#reset-password?', ''));
+			var token = urlParams.get('token');
+			
+			if (token) {
+				// Populate the reset confirmation modal with the token
+				$('#resetConfirmToken').val(token);
+				this.showResetConfirmModal();
+			}
+		}
+	},
+	
+	showResetConfirmModal: function() {
+		$('#loginModal, #registerModal, #resetModal').modal('hide');
+		$('#resetConfirmModal').modal('show');
 	},
 	
 	syncLocalData: function() {
