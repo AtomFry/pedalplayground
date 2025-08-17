@@ -18,7 +18,7 @@ class DatabaseConnection {
      */
     connect() {
         return new Promise((resolve, reject) => {
-            this.db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+            this.db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
                 if (err) {
                     console.error('❌ Error connecting to database:', err.message);
                     reject(err);
@@ -57,6 +57,64 @@ class DatabaseConnection {
                     reject(err);
                 } else {
                     resolve(row);
+                }
+            });
+        });
+    }
+
+    /**
+     * Execute an INSERT, UPDATE, or DELETE query
+     */
+    run(sql, params = []) {
+        return new Promise((resolve, reject) => {
+            this.db.run(sql, params, function(err) {
+                if (err) {
+                    console.error('❌ Database query error:', err.message);
+                    reject(err);
+                } else {
+                    resolve({
+                        lastID: this.lastID,
+                        changes: this.changes
+                    });
+                }
+            });
+        });
+    }
+
+    /**
+     * Execute multiple statements in a transaction
+     */
+    async transaction(statements) {
+        return new Promise((resolve, reject) => {
+            this.db.serialize(() => {
+                this.db.run('BEGIN TRANSACTION');
+                
+                try {
+                    const results = [];
+                    for (const { sql, params } of statements) {
+                        this.db.run(sql, params, function(err) {
+                            if (err) {
+                                this.db.run('ROLLBACK');
+                                reject(err);
+                                return;
+                            }
+                            results.push({
+                                lastID: this.lastID,
+                                changes: this.changes
+                            });
+                        });
+                    }
+                    
+                    this.db.run('COMMIT', (err) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(results);
+                        }
+                    });
+                } catch (error) {
+                    this.db.run('ROLLBACK');
+                    reject(error);
                 }
             });
         });

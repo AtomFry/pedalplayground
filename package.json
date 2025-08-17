@@ -21,7 +21,9 @@
 		"db:seed": "node database/scripts/seed.js",
 		"db:export": "node database/scripts/export-json.js",
 		"db:query": "node database/scripts/query.js",
-		"db:reset": "rm -f database/pedalplayground.db && npm run db:setup && npm run db:seed"
+		"db:reset": "rm -f database/pedalplayground.db && npm run db:setup && npm run db:seed",
+		"db:migrate": "node database/scripts/migrate.js",
+		"db:migrate:status": "node database/scripts/migrate.js status"
 	},
 	"repository": {
 		"type": "git",
