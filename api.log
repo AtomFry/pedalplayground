@@ -18,3 +18,7 @@
 2025-08-17T13:12:59.822Z - GET /favicon.ico
 2025-08-17T13:13:08.019Z - GET /api/health
 2025-08-17T13:13:42.764Z - GET /api/pedals
+2025-08-17T13:27:18.501Z - GET /api/pedals
+2025-08-17T13:27:20.630Z - GET /favicon.ico
+
+🛑 Shutting down server...

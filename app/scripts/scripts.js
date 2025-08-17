@@ -41,18 +41,46 @@ window.APIService = {
 		}
 		
 		console.log('Fetching pedals from API...');
+		this.fetchAllPedals(1, [], successCallback, errorCallback);
+	},
+	
+	fetchAllPedals: function(page, allPedals, successCallback, errorCallback) {
+		var self = this;
+		
 		$.ajax({
-			url: this.baseURL + '/pedals?limit=10000&sort=brand&order=asc',
+			url: this.baseURL + '/pedals?page=' + page + '&limit=1000&sort=brand&order=asc',
 			timeout: 10000,
 			dataType: 'json',
 			success: function(data) {
-				console.log('Pedals API call successful, ' + data.data.length + ' pedals loaded');
-				self.cache.pedals = data;
-				self.cache.timestamp = Date.now();
-				successCallback(data);
+				// Add pedals from this page to our collection
+				allPedals = allPedals.concat(data.data);
+				
+				console.log('Pedals page ' + page + ' loaded: ' + data.data.length + ' pedals (total so far: ' + allPedals.length + ')');
+				
+				// Check if there are more pages
+				if (data.pagination && data.pagination.hasNextPage) {
+					// Fetch the next page
+					self.fetchAllPedals(page + 1, allPedals, successCallback, errorCallback);
+				} else {
+					// All pages loaded, return complete dataset
+					console.log('All pedals loaded! Total: ' + allPedals.length + ' pedals');
+					var completeData = {
+						data: allPedals,
+						pagination: {
+							total: allPedals.length,
+							totalPages: page,
+							page: 1,
+							limit: allPedals.length
+						}
+					};
+					
+					self.cache.pedals = completeData;
+					self.cache.timestamp = Date.now();
+					successCallback(completeData);
+				}
 			},
 			error: function(xhr, status, error) {
-				console.error('Pedals API call failed:', error);
+				console.error('Pedals API call failed on page ' + page + ':', error);
 				errorCallback(xhr, status, error);
 			}
 		});
@@ -69,18 +97,46 @@ window.APIService = {
 		}
 		
 		console.log('Fetching pedalboards from API...');
+		this.fetchAllPedalboards(1, [], successCallback, errorCallback);
+	},
+	
+	fetchAllPedalboards: function(page, allBoards, successCallback, errorCallback) {
+		var self = this;
+		
 		$.ajax({
-			url: this.baseURL + '/pedalboards?limit=1000&sort=brand&order=asc',
+			url: this.baseURL + '/pedalboards?page=' + page + '&limit=1000&sort=brand&order=asc',
 			timeout: 10000,
 			dataType: 'json',
 			success: function(data) {
-				console.log('Pedalboards API call successful, ' + data.data.length + ' pedalboards loaded');
-				self.cache.pedalboards = data;
-				self.cache.timestamp = Date.now();
-				successCallback(data);
+				// Add pedalboards from this page to our collection
+				allBoards = allBoards.concat(data.data);
+				
+				console.log('Pedalboards page ' + page + ' loaded: ' + data.data.length + ' pedalboards (total so far: ' + allBoards.length + ')');
+				
+				// Check if there are more pages
+				if (data.pagination && data.pagination.hasNextPage) {
+					// Fetch the next page
+					self.fetchAllPedalboards(page + 1, allBoards, successCallback, errorCallback);
+				} else {
+					// All pages loaded, return complete dataset
+					console.log('All pedalboards loaded! Total: ' + allBoards.length + ' pedalboards');
+					var completeData = {
+						data: allBoards,
+						pagination: {
+							total: allBoards.length,
+							totalPages: page,
+							page: 1,
+							limit: allBoards.length
+						}
+					};
+					
+					self.cache.pedalboards = completeData;
+					self.cache.timestamp = Date.now();
+					successCallback(completeData);
+				}
 			},
 			error: function(xhr, status, error) {
-				console.error('Pedalboards API call failed:', error);
+				console.error('Pedalboards API call failed on page ' + page + ':', error);
 				errorCallback(xhr, status, error);
 			}
 		});

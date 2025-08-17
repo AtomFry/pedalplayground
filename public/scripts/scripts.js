@@ -2,11 +2,194 @@ var pedalImagePath = "public/images/pedals/";
 var pedalboardImagePath = "public/images/pedalboards/";
 var units = 'in';
 
+const UNITS_IN = 'in.';
+const UNITS_MM = 'mm.';
+
+// API Service for communicating with the REST API
+window.APIService = {
+	baseURL: 'http://localhost:3001/api',
+	cache: {
+		pedals: null,
+		pedalboards: null,
+		timestamp: null
+	},
+	cacheTimeout: 300000, // 5 minutes
+	
+	checkHealth: function(callback, errorCallback) {
+		$.ajax({
+			url: this.baseURL + '/health',
+			timeout: 5000,
+			dataType: 'json',
+			success: function(data) {
+				console.log('API Health Check: OK');
+				callback(data);
+			},
+			error: function(xhr, status, error) {
+				console.error('API Health Check: Failed', error);
+				errorCallback(xhr, status, error);
+			}
+		});
+	},
+	
+	getPedals: function(successCallback, errorCallback) {
+		var self = this;
+		
+		// Check cache first
+		if (this.isCacheValid('pedals')) {
+			console.log('Using cached pedals data');
+			successCallback(this.cache.pedals);
+			return;
+		}
+		
+		console.log('Fetching pedals from API...');
+		this.fetchAllPedals(1, [], successCallback, errorCallback);
+	},
+	
+	fetchAllPedals: function(page, allPedals, successCallback, errorCallback) {
+		var self = this;
+		
+		$.ajax({
+			url: this.baseURL + '/pedals?page=' + page + '&limit=1000&sort=brand&order=asc',
+			timeout: 10000,
+			dataType: 'json',
+			success: function(data) {
+				// Add pedals from this page to our collection
+				allPedals = allPedals.concat(data.data);
+				
+				console.log('Pedals page ' + page + ' loaded: ' + data.data.length + ' pedals (total so far: ' + allPedals.length + ')');
+				
+				// Check if there are more pages
+				if (data.pagination && data.pagination.hasNextPage) {
+					// Fetch the next page
+					self.fetchAllPedals(page + 1, allPedals, successCallback, errorCallback);
+				} else {
+					// All pages loaded, return complete dataset
+					console.log('All pedals loaded! Total: ' + allPedals.length + ' pedals');
+					var completeData = {
+						data: allPedals,
+						pagination: {
+							total: allPedals.length,
+							totalPages: page,
+							page: 1,
+							limit: allPedals.length
+						}
+					};
+					
+					self.cache.pedals = completeData;
+					self.cache.timestamp = Date.now();
+					successCallback(completeData);
+				}
+			},
+			error: function(xhr, status, error) {
+				console.error('Pedals API call failed on page ' + page + ':', error);
+				errorCallback(xhr, status, error);
+			}
+		});
+	},
+	
+	getPedalboards: function(successCallback, errorCallback) {
+		var self = this;
+		
+		// Check cache first
+		if (this.isCacheValid('pedalboards')) {
+			console.log('Using cached pedalboards data');
+			successCallback(this.cache.pedalboards);
+			return;
+		}
+		
+		console.log('Fetching pedalboards from API...');
+		this.fetchAllPedalboards(1, [], successCallback, errorCallback);
+	},
+	
+	fetchAllPedalboards: function(page, allBoards, successCallback, errorCallback) {
+		var self = this;
+		
+		$.ajax({
+			url: this.baseURL + '/pedalboards?page=' + page + '&limit=1000&sort=brand&order=asc',
+			timeout: 10000,
+			dataType: 'json',
+			success: function(data) {
+				// Add pedalboards from this page to our collection
+				allBoards = allBoards.concat(data.data);
+				
+				console.log('Pedalboards page ' + page + ' loaded: ' + data.data.length + ' pedalboards (total so far: ' + allBoards.length + ')');
+				
+				// Check if there are more pages
+				if (data.pagination && data.pagination.hasNextPage) {
+					// Fetch the next page
+					self.fetchAllPedalboards(page + 1, allBoards, successCallback, errorCallback);
+				} else {
+					// All pages loaded, return complete dataset
+					console.log('All pedalboards loaded! Total: ' + allBoards.length + ' pedalboards');
+					var completeData = {
+						data: allBoards,
+						pagination: {
+							total: allBoards.length,
+							totalPages: page,
+							page: 1,
+							limit: allBoards.length
+						}
+					};
+					
+					self.cache.pedalboards = completeData;
+					self.cache.timestamp = Date.now();
+					successCallback(completeData);
+				}
+			},
+			error: function(xhr, status, error) {
+				console.error('Pedalboards API call failed on page ' + page + ':', error);
+				errorCallback(xhr, status, error);
+			}
+		});
+	},
+	
+	isCacheValid: function(type) {
+		return this.cache[type] && 
+			   this.cache.timestamp && 
+			   (Date.now() - this.cache.timestamp) < this.cacheTimeout;
+	},
+	
+	clearCache: function() {
+		this.cache.pedals = null;
+		this.cache.pedalboards = null;
+		this.cache.timestamp = null;
+		console.log('API cache cleared');
+	}
+};
+
+// UI Helper Functions for loading states and error handling
+function showLoadingMessage(message) {
+	$('.pedal-list, .pedalboard-list').prop('disabled', true);
+	$('.pedal-list, .pedalboard-list').append('<option value="">Loading...</option>');
+	console.log('Loading: ' + message);
+}
+
+function hideLoadingMessage() {
+	$('.pedal-list, .pedalboard-list').prop('disabled', false);
+	$('.pedal-list option[value=""], .pedalboard-list option[value=""]').remove();
+}
+
+function showErrorMessage(message) {
+	hideLoadingMessage();
+	alert('Error: ' + message);
+	console.error('API Error: ' + message);
+}
+
 $(document).ready(function () {
 	
-	// Populate Pedalboards and Pedals lists
-	GetPedalData();
-	GetPedalBoardData();
+	// Check API health before loading data
+	APIService.checkHealth(
+		function() {
+			// API is healthy, proceed with normal loading
+			console.log('API health check passed - loading data');
+			GetPedalData();
+			GetPedalBoardData();
+		},
+		function() {
+			showErrorMessage('API server is not available. Please ensure the server is running on http://localhost:3001');
+		}
+	);
+	
 	convertUnits();
 
 	// Make lists searchable
@@ -642,45 +825,37 @@ window.Pedal = function (type, brand, name, width, height, image) {
 };
 
 window.GetPedalData = function () {
-	// console.log('GetPedalData');
-	$.ajax({
-		url: "public/data/pedals.json",
-		dataType: "text",
-		type: "GET",
-		success: function (data) {
-			data = $.parseJSON(data.replace(/\r\n/g, "").replace(/\t/g, ""));
+	console.log('GetPedalData - Loading from API...');
+	showLoadingMessage('Loading pedals...');
+	
+	APIService.getPedals(
+		function(apiResponse) {
+			hideLoadingMessage();
+			console.log('Pedals loaded successfully from API');
+			
 			var pedals = [];
-			for (var pedal in data) {
-				pedals.push(
-					new Pedal(
-						data[pedal].Type || "",
-						data[pedal].Brand || "",
-						data[pedal].Name || "",
-						data[pedal].Width || "",
-						data[pedal].Height || "",
-						data[pedal].Image || ""
-					)
-				);
-			}
-			//Sort brands and pedals alphabetically
-			pedals.sort(function (a, b) {
-				if (a.Brand < b.Brand) {
-					return -1;
-				} else if (b.Brand < a.Brand) {
-					return 1;
-				} else {
-					if (a.Name < b.Name) {
-						return -1;
-					} else if (b.Name < a.Name) {
-						return 1;
-					}
-					return 0;
-				}
+			// Handle both API response formats (object with data property or direct array)
+			var pedalData = apiResponse.data || apiResponse;
+			pedalData.forEach(function(pedal) {
+				pedals.push(new Pedal(
+					pedal.Type || "", // Type field
+					pedal.Brand || pedal.brand,
+					pedal.Name || pedal.name,
+					pedal.Width || pedal.width,
+					pedal.Height || pedal.height,
+					pedal.Image || pedal.image
+				));
 			});
+			
+			// Pedals are already sorted by API (sort=brand&order=asc)
 			pedals.forEach(RenderPedals);
 			listPedals(pedals);
 		},
-	});
+		function(xhr, status, error) {
+			hideLoadingMessage();
+			showErrorMessage('Failed to load pedals: ' + error + '. Please ensure the API server is running.');
+		}
+	);
 };
 
 window.RenderPedals = function (pedals) {
@@ -713,44 +888,35 @@ window.PedalBoard = function (brand, name, width, height, image) {
 };
 
 window.GetPedalBoardData = function () {
-	// console.log('GetPedalBoardData');
-	$.ajax({
-		url: "public/data/pedalboards.json",
-		dataType: "text",
-		type: "GET",
-		success: function (data) {
-			data = $.parseJSON(data.replace(/\r\n/g, "").replace(/\t/g, ""));
+	console.log('GetPedalBoardData - Loading from API...');
+	showLoadingMessage('Loading pedalboards...');
+	
+	APIService.getPedalboards(
+		function(apiResponse) {
+			hideLoadingMessage();
+			console.log('Pedalboards loaded successfully from API');
+			
 			var pedalboards = [];
-			for (var pedalboard in data) {
-				pedalboards.push(
-					new PedalBoard(
-						data[pedalboard].Brand || "",
-						data[pedalboard].Name || "",
-						data[pedalboard].Width || "",
-						data[pedalboard].Height || "",
-						data[pedalboard].Image || ""
-					)
-				);
-			}
-			//console.log("Pedalboard data loaded");
-			//Sort brands and pedals alphabetically
-			pedalboards.sort(function (a, b) {
-				if (a.Brand < b.Brand) {
-					return -1;
-				} else if (b.Brand < a.Brand) {
-					return 1;
-				} else {
-					if (a.Name < b.Name) {
-						return -1;
-					} else if (b.Name < a.Name) {
-						return 1;
-					}
-					return 0;
-				}
+			// Handle both API response formats (object with data property or direct array)
+			var boardData = apiResponse.data || apiResponse;
+			boardData.forEach(function(board) {
+				pedalboards.push(new PedalBoard(
+					board.Brand || board.brand,
+					board.Name || board.name,
+					board.Width || board.width,
+					board.Height || board.height,
+					board.Image || board.image
+				));
 			});
+			
+			// Pedalboards are already sorted by API (sort=brand&order=asc)
 			RenderPedalBoards(pedalboards);
 		},
-	});
+		function(xhr, status, error) {
+			hideLoadingMessage();
+			showErrorMessage('Failed to load pedalboards: ' + error + '. Please ensure the API server is running.');
+		}
+	);
 };
 
 window.RenderPedalBoards = function (pedalboards) {
