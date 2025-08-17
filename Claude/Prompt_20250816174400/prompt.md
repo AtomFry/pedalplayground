@@ -1,0 +1,3 @@
+# User Prompt
+
+awesome, everything is working great. Next, let's create a couple simple backend APIs to allow retrieval of pedals and pedalboards. Let's not replace any logic in the website that is reading the data from json files yet, but let's build the REST apis to get pedals and pedalboards and start those up when we run npm start to start the website. Don't forget to create a new prompt folder and log this prompt and your plan markdown files for this prompt and let me review the plan before we start to implement this
