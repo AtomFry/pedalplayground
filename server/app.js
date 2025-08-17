@@ -9,6 +9,8 @@ const path = require('path');
 // Import middleware
 const corsMiddleware = require('./middleware/cors');
 const { errorHandler, notFoundHandler } = require('./middleware/error');
+const { createSessionMiddleware, attachSessionUtils } = require('./middleware/session');
+const { getRateLimiter } = require('./middleware/rateLimiter');
 
 // Import database connection
 const db = require('./database/connection');
@@ -16,6 +18,7 @@ const db = require('./database/connection');
 // Import routes
 const pedalsRoutes = require('./routes/pedals');
 const pedalboardsRoutes = require('./routes/pedalboards');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,6 +27,13 @@ const PORT = process.env.PORT || 3001;
 app.use(corsMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session middleware (must be before auth routes)
+app.use(createSessionMiddleware());
+app.use(attachSessionUtils);
+
+// General rate limiting for all API endpoints
+app.use('/api', getRateLimiter('general'));
 
 // Request logging (development only)
 if (process.env.NODE_ENV !== 'production') {
@@ -44,6 +54,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/user', authRoutes);
 app.use('/api/pedals', pedalsRoutes);
 app.use('/api/pedalboards', pedalboardsRoutes);
 
@@ -67,6 +79,8 @@ async function startServer() {
             console.log('================================');
             console.log(`🚀 Server running on http://localhost:${PORT}`);
             console.log(`📋 Health check: http://localhost:${PORT}/api/health`);
+            console.log(`🔐 Authentication: http://localhost:${PORT}/api/auth`);
+            console.log(`👤 User Profile: http://localhost:${PORT}/api/user`);
             console.log(`🎛️  Pedals API: http://localhost:${PORT}/api/pedals`);
             console.log(`📋 Pedalboards API: http://localhost:${PORT}/api/pedalboards`);
             console.log('================================');
